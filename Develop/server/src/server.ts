@@ -1,61 +1,60 @@
 import express from 'express';
-// import path from 'node:path';
-// import type { Request, Response } from 'express';
-// Import the ApolloServer class
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import mongoose from 'mongoose';
 import cors from 'cors';
-import {
-  ApolloServer,
-} from '@apollo/server';
-import {
-  expressMiddleware
-} from '@apollo/server/express4';
-import { authenticateToken } from './services/auth-service';
-// Import the two parts of a GraphQL schema
-import { typeDefs, resolvers } from './schemas/index';
-import db from './config/connection';
+import dotenv from 'dotenv';
 
+import typeDefs from './schemas/typeDefs.js';
+import resolvers from './schemas/resolvers.js';
+import { authenticateToken } from './services/auth.js';
 
-const PORT = process.env.PORT || 3001;
+// Load environment variables
+dotenv.config();
+
+const app = express();
+
+// ✅ Fix CORS settings for GraphQL
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Frontend URL
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
 
-const app = express();
-
-app.use(cors({
-  origin: ['https://book-finder-graphql-frontend.onrender.com'], 
-  credentials: true, 
-}));
-
-// Create a new instance of an Apollo server with the GraphQL schema
-const startApolloServer = async () => {
+async function startServer() {
   await server.start();
-  await db;
 
-  app.use(express.urlencoded({ extended: false }));
-  app.use(express.json());
+  app.use(
+    '/graphql',
+    expressMiddleware(server, {
+      context: async ({ req }) => {
+        const user = authenticateToken(req); // Get user from token
+        return { user }; // Provide user to resolvers
+      },
+    })
+  );
 
-  app.use('/graphql', expressMiddleware(server as any,
-    {
-      context: authenticateToken as any
-    }
-  ));
+  try {
+    await mongoose.connect(process.env.MONGODB_URI!);
+    console.log('📚 Connected to MongoDB');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+  }
 
-  /* if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../client/dist')));
-
-    app.get('*', (_req: Request, res: Response) => {
-      res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-    });
-  } */
-
+  // ✅ Fix Port Issue
+  const PORT = process.env.PORT || 10000;
   app.listen(PORT, () => {
-    console.log(`API server running on port ${PORT}!`);
-    console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
+    console.log(`🚀 Server ready at http://localhost:10000/graphql`);
   });
+}
 
-};
-
-// Call the async function to start the server
-startApolloServer();
+// Start the server
+startServer();

@@ -1,28 +1,15 @@
-import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import 'bootstrap/dist/css/bootstrap.min.css'
+import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap is loaded first
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";  // ✅ Fixed Import
+import App from "./App";
 
-import App from './App.tsx'
-import SearchBooks from './pages/SearchBooks'
-import SavedBooks from './pages/SavedBooks'
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+  <React.StrictMode>
+    <BrowserRouter> 
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+);
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <App />,
-    errorElement: <h1 className="display-2">Wrong page!</h1>,
-    children: [
-      {
-        index: true,
-        element: <SearchBooks />
-      }, {
-        path: '/saved',
-        element: <SavedBooks />
-      }
-    ]
-  }
-])
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <RouterProvider router={router} />
-)

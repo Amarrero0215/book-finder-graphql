@@ -1,15 +1,14 @@
-import type { Connection } from 'mongoose';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+
+//Make sure to load environment variables from .env
 dotenv.config();
 
-import mongoose from 'mongoose';
+const MONGODB_URI = process.env.MONGODB_URI || '';
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/googlebooks');
+mongoose.connect(MONGODB_URI)
+    .then(() => console.log('📚 Connected to MongoDB'))
+    .catch(err => console.error('❌ MongoDB connection error:', err));
 
-const db: Connection = mongoose.connection;
-    db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-    db.once('open', () => {
-    console.log('✅ MongoDB connected successfully');
-    });
+export default mongoose.connection;
 
-export default db;

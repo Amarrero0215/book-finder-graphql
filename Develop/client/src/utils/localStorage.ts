@@ -1,25 +1,22 @@
-// Defining the key once for clarity and consistency
-const SAVED_KEY = 'saved_books';
-
 export const getSavedBookIds = () => {
-  const savedBookIds = localStorage.getItem(SAVED_KEY)
-    ? JSON.parse(localStorage.getItem(SAVED_KEY)!)
+  const savedBookIds = localStorage.getItem('saved_books')
+    ? JSON.parse(localStorage.getItem('saved_books')!)
     : [];
 
   return savedBookIds;
 };
 
-export const saveBookIds = (bookIdArr: string | any[]) => {
+export const saveBookIds = (bookIdArr: string[]) => {
   if (bookIdArr.length) {
-    localStorage.setItem(SAVED_KEY, JSON.stringify(bookIdArr));
+    localStorage.setItem('saved_books', JSON.stringify(bookIdArr));
   } else {
-    localStorage.removeItem(SAVED_KEY);
+    localStorage.removeItem('saved_books');
   }
 };
 
 export const removeBookId = (bookId: string) => {
-  const savedBookIds = localStorage.getItem(SAVED_KEY)
-    ? JSON.parse(localStorage.getItem(SAVED_KEY)!)
+  const savedBookIds = localStorage.getItem('saved_books')
+    ? JSON.parse(localStorage.getItem('saved_books')!)
     : null;
 
   if (!savedBookIds) {
@@ -27,7 +24,7 @@ export const removeBookId = (bookId: string) => {
   }
 
   const updatedSavedBookIds = savedBookIds?.filter((savedBookId: string) => savedBookId !== bookId);
-  localStorage.setItem(SAVED_KEY, JSON.stringify(updatedSavedBookIds));
+  localStorage.setItem('saved_books', JSON.stringify(updatedSavedBookIds));
 
   return true;
 };

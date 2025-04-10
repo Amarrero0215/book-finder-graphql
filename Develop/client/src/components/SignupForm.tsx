@@ -1,40 +1,30 @@
 import { useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-import { ChangeEvent, FormEvent } from 'react';
-
 import { useMutation } from '@apollo/client';
 import { ADD_USER } from '../utils/mutations';
-import { useErrorAlert } from '../hooks/useErrorAlert';
+import { setToken } from '../utils/auth';
 
-import Auth from '../utils/auth';
+const SignupForm = () => {
+  // Set initial form state
+  const [userFormData, setUserFormData] = useState({ username: '', email: '', password: '' });
+  const [showAlert, setShowAlert] = useState(false);
 
-const SignupForm = ({}: { handleModalClose: () => void }) => {
-  // set initial form state
-  const [userFormData, setUserFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-  });
-  // set state for form validation
-  const [validated] = useState(false);
-  // set state for alert
-
+  // Apollo Mutation Hook for adding a user
   const [addUser, { error }] = useMutation(ADD_USER);
-  const [showAlert, handleAlertClose] = useErrorAlert(error);
 
+  // Handle input changes
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setUserFormData({ ...userFormData, [name]: value });
   };
 
+  // Handle form submission
   const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // check if form has everything (as per react-bootstrap docs)
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
+    if (!userFormData.username || !userFormData.email || !userFormData.password) {
+      return;
     }
 
     try {
@@ -42,12 +32,15 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
         variables: { ...userFormData },
       });
 
-      Auth.login(data.addUser.token);
-    } catch (e) {
-      console.error('Signup error:', e);
+      if (data?.addUser?.token) {
+        setToken(data.addUser.token); // Save token
+      }
+    } catch (err) {
+      console.error(err);
+      setShowAlert(true);
     }
-    
 
+    // Reset form
     setUserFormData({
       username: '',
       email: '',
@@ -57,74 +50,59 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
 
   return (
     <>
-      {/* This is needed for the validation functionality above */}
-      <Form noValidate validated={validated} onSubmit={handleFormSubmit}>
-        {/* show alert if server response is bad */}
-        <Alert
-          dismissible
-          onClose={handleAlertClose}
-          show={showAlert}
-          variant="danger"
-        >
-          Something went wrong with your signup!
+      <Form noValidate onSubmit={handleFormSubmit}>
+        <Alert dismissible onClose={() => setShowAlert(false)} show={showAlert || !!error} variant='danger'>
+          {error ? error.message : 'Something went wrong with your signup!'}
         </Alert>
 
-        <Form.Group className='mb-3'>
-          <Form.Label htmlFor="username">Username</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Your username"
-            name="username"
-            onChange={handleInputChange}
-            value={userFormData.username}
-            required
-          />
-          <Form.Control.Feedback type="invalid">
-            Username is required!
-          </Form.Control.Feedback>
-        </Form.Group>
+        <Form.Group className="mb-3">
+  <Form.Label htmlFor="username">Username</Form.Label>
+  <Form.Control
+    id="username" // Add ID
+    type="text"
+    placeholder="Your username"
+    name="username"
+    autoComplete="off" // Add this
+    onChange={handleInputChange}
+    value={userFormData.username}
+    required
+  />
+</Form.Group>
 
-        <Form.Group className='mb-3'>
-          <Form.Label htmlFor="email">Email</Form.Label>
-          <Form.Control
-            type="email"
-            placeholder="Your email address"
-            name="email"
-            onChange={handleInputChange}
-            value={userFormData.email}
-            required
-          />
-          <Form.Control.Feedback type="invalid">
-            Email is required!
-          </Form.Control.Feedback>
-        </Form.Group>
+<Form.Group className="mb-3">
+  <Form.Label htmlFor="email">Email</Form.Label>
+  <Form.Control
+    id="email" // Add ID
+    type="email"
+    placeholder="Your email address"
+    name="email"
+    autoComplete="off" // 
+    onChange={handleInputChange}
+    value={userFormData.email}
+    required
+  />
+</Form.Group>
 
-        <Form.Group className='mb-3'>
-          <Form.Label htmlFor="password">Password</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Your password"
-            name="password"
-            onChange={handleInputChange}
-            value={userFormData.password}
-            required
-          />
-          <Form.Control.Feedback type="invalid">
-            Password is required!
-          </Form.Control.Feedback>
-        </Form.Group>
+<Form.Group className="mb-3">
+  <Form.Label htmlFor="password">Password</Form.Label>
+  <Form.Control
+    id="password" // Add ID
+    type="password"
+    placeholder="Your password"
+    name="password"
+    autoComplete="off" 
+    onChange={handleInputChange}
+    value={userFormData.password}
+    required
+  />
+</Form.Group>
+
+        
         <Button
-          disabled={
-            !(
-              userFormData.username &&
-              userFormData.email &&
-              userFormData.password
-            )
-          }
-          type="submit"
-          variant="success"
-        >
-          Submit
+          disabled={!(userFormData.username && userFormData.email && userFormData.password)}
+          type='submit'
+          variant='success'>
+          Sign Up
         </Button>
       </Form>
     </>
