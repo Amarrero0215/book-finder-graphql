@@ -1,6 +1,6 @@
 import { Schema, model, type Document } from 'mongoose';
 import bcrypt from 'bcrypt';
-import { type IBook, bookSchema } from './Book';
+import { type IBook, bookSchema } from './Book';  
 
 interface IUser extends Document {
   username: string;
@@ -39,10 +39,11 @@ const userSchema = new Schema<IUser>(
   }
 );
 
+const saltRounds = 10;
+
 // hash user password
 userSchema.pre<IUser>('save', async function (next) {
   if (this.isNew || this.isModified('password')) {
-    const saltRounds = 10;
     this.password = await bcrypt.hash(this.password, saltRounds);
   }
 
