@@ -45,8 +45,8 @@ const LoginForm = ({}: { handleModalClose: () => void }) => {
 
       Auth.login(data.login.token);
     } catch (e) {
-      console.error(e);
-    }
+      console.error('Login error:', e);
+    }    
 
     // clear form values
     setUserFormData({
