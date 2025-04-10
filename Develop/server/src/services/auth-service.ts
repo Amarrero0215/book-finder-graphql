@@ -1,44 +1,52 @@
 import type { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
+import IUserContext from '../interfaces/UserContext';  // Default import since it's a default export
 import dotenv from 'dotenv';
 dotenv.config();
 
 interface JwtPayload {
-  _id: unknown;
+  _id: string;
   username: string;
-  email: string,
+  email: string;
 }
 
-export const authenticateToken = ({ req }: { req: Request }) => {
-  // allows token to be sent via req.body, req.query, or headers
+export const authenticateToken = ({ req }: { req: Request }): IUserContext => {
+  // Extract the token from request headers, query, or body
   let token = req.body.token || req.query.token || req.headers.authorization;
 
+  // If authorization header exists, remove "Bearer " prefix
   if (req.headers.authorization) {
     token = token.split(' ').pop().trim();
   }
 
   if (!token) {
-    return req;
+    return { user: null }; // If no token, return an empty user context
   }
 
   try {
-    const { data }: any = jwt.verify(token, process.env.JWT_SECRET_KEY || '', { maxAge: '2hr' });
-    req.user = data as JwtPayload;
+    // Verify and decode the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY || '', { maxAge: '2h' });
+
+    // TypeScript knows decoded is a JwtPayload type because of the type assertion
+    const data = decoded as JwtPayload;
+    return { user: data }; // Return decoded user info as the context
   } catch (err) {
     console.log('Invalid token');
+    return { user: null }; // If token is invalid, return empty context
   }
-
-  return req;
 };
 
-export const signToken = (username: string, email: string, _id: unknown) => {
-  const payload = { username, email, _id };
-  const secretKey: any = process.env.JWT_SECRET_KEY;
+// Sign a new token (used for login/signup)
+export const signToken = (username: string, email: string, _id: string) => {
+  const payload: JwtPayload = { username, email, _id }; // Ensure correct typing
 
-  return jwt.sign({data: payload}, secretKey, { expiresIn: '2h' });
+  // Return the signed JWT token
+  const secretKey: string = process.env.JWT_SECRET_KEY || '';
+  return jwt.sign({ data: payload }, secretKey, { expiresIn: '2h' });
 };
 
+// Custom AuthenticationError for GraphQL
 export class AuthenticationError extends GraphQLError {
   constructor(message: string) {
     super(message, undefined, undefined, undefined, ['UNAUTHENTICATED']);
