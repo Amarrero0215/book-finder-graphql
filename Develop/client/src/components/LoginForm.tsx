@@ -1,28 +1,21 @@
 // see SignupForm.js for comments
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import type { ChangeEvent, FormEvent } from 'react';
 
 import { useMutation } from '@apollo/client';
 import { LOGIN_USER } from '../utils/mutations';
+import { useErrorAlert } from '../hooks/useErrorAlert';
 
 import Auth from '../utils/auth';
 
 const LoginForm = ({}: { handleModalClose: () => void }) => {
   const [userFormData, setUserFormData] = useState({ email: '', password: '' });
   const [validated] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
 
   const [login, { error }] = useMutation(LOGIN_USER);
-
-  useEffect(() => {
-    if (error) {
-      setShowAlert(true);
-    } else {
-      setShowAlert(false);
-    }
-  }, [error]);
+  const [showAlert, handleAlertClose] = useErrorAlert(error);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -60,7 +53,7 @@ const LoginForm = ({}: { handleModalClose: () => void }) => {
       <Form noValidate validated={validated} onSubmit={handleFormSubmit}>
         <Alert
           dismissible
-          onClose={() => setShowAlert(false)}
+          onClose={handleAlertClose}
           show={showAlert}
           variant="danger"
         >

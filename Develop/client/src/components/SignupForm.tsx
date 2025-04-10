@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { ChangeEvent, FormEvent } from 'react';
 
 import { useMutation } from '@apollo/client';
 import { ADD_USER } from '../utils/mutations';
+import { useErrorAlert } from '../hooks/useErrorAlert';
 
 import Auth from '../utils/auth';
 
@@ -17,17 +18,9 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
   // set state for form validation
   const [validated] = useState(false);
   // set state for alert
-  const [showAlert, setShowAlert] = useState(false);
 
   const [addUser, { error }] = useMutation(ADD_USER);
-
-  useEffect(() => {
-    if (error) {
-      setShowAlert(true);
-    } else {
-      setShowAlert(false);
-    }
-  }, [error]);
+  const [showAlert, handleAlertClose] = useErrorAlert(error);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -69,7 +62,7 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
         {/* show alert if server response is bad */}
         <Alert
           dismissible
-          onClose={() => setShowAlert(false)}
+          onClose={handleAlertClose}
           show={showAlert}
           variant="danger"
         >
