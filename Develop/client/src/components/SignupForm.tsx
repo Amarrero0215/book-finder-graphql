@@ -50,9 +50,10 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
       });
 
       Auth.login(data.addUser.token);
-    } catch (err) {
-      console.error(err);
+    } catch (e) {
+      console.error('Signup error:', e);
     }
+    
 
     setUserFormData({
       username: '',
