@@ -12,7 +12,7 @@ import SignupForm from "./components/SignupForm";
 
 
 const httpLink = createHttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql', 
+  uri: import.meta.env.VITE_GRAPHQL_URI || 'https://book-finder-graphql.onrender.com/graphql', 
 });
 
 const authLink = setContext((_, { headers }) => {
