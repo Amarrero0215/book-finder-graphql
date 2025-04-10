@@ -12,6 +12,13 @@ import { authenticateToken } from './services/auth.js';
 // Load environment variables
 dotenv.config();
 
+const mongoURI = process.env.MONGODB_URI;
+
+if (!mongoURI) {
+  console.error('MONGODB_URI is not defined in the environment.');
+  process.exit(1);  
+}
+
 const app = express();
 
 // ✅ Fix CORS settings for GraphQL
