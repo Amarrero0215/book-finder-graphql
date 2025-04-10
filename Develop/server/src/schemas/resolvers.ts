@@ -1,8 +1,8 @@
-import type IUserContext from '../interfaces/UserContext.js';
-import type IUserDocument from '../interfaces/UserDocument.js';
-import type IBookInput from '../interfaces/BookInput.js';
-import { User } from '../models/index.js';
-import { signToken, AuthenticationError } from '../services/auth-service.js';
+import type IUserContext from '../interfaces/UserContext';
+import type IUserDocument from '../interfaces/UserDocument';
+import type IBookInput from '../interfaces/BookInput';
+import { User } from '../models/index';
+import { signToken, AuthenticationError } from '../services/auth-service';
 
 const resolvers = {
   Query: {

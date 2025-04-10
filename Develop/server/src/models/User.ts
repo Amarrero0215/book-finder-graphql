@@ -1,6 +1,6 @@
 import { Schema, model, type Document } from 'mongoose';
 import bcrypt from 'bcrypt';
-import { type IBook, bookSchema } from './Book.js';
+import { type IBook, bookSchema } from './Book';
 
 interface IUser extends Document {
   username: string;
